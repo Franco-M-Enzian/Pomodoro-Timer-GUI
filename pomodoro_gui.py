@@ -22,14 +22,22 @@ class PomodoroTimer:
         self.remaining_time = 0
         self.running = False
 
+        # タイトルラベル
         self.label = tk.Label(root, text="Welcome to Pomodoro Timer", font=("Helvetica", 24))
         self.label.pack(pady=20)
 
+        # タイマー表示ラベル
         self.time_label = tk.Label(root, text="", font=("Helvetica", 48))
         self.time_label.pack()
 
+        # Startボタン
         self.start_button = tk.Button(root, text="Start", command=self.start_timer, font=("Helvetica", 14))
         self.start_button.pack(pady=20)
+
+        # Closeボタン
+        self.close_button = tk.Button(root, text="Close", command=self.close_app, font=("Helvetica", 14))
+        self.close_button.pack(pady=20)
+        self.close_button.pack_forget()  # 初期状態では非表示
 
     def update_timer(self):
         mins, secs = divmod(self.remaining_time, 60)
@@ -73,7 +81,12 @@ class PomodoroTimer:
         self.current_cycle = 1
         self.label.config(text=f"Cycle {self.current_cycle} - Work Time")
         self.remaining_time = self.work_time
+        self.start_button.pack_forget()  # Startボタンを非表示
+        self.close_button.pack(pady=20)  # Closeボタンを表示
         self.update_timer()
+
+    def close_app(self):
+        self.root.quit()  # アプリケーションを終了
 
 if __name__ == "__main__":
     root = tk.Tk()
