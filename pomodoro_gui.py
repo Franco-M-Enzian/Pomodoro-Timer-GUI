@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import PhotoImage
+from tkinter import PhotoImage, messagebox
 
 class PomodoroTimer:
     def __init__(self, root):
@@ -40,8 +40,32 @@ class PomodoroTimer:
             self.remaining_time -= 1
             self.root.after(1000, self.update_timer)
         elif self.remaining_time == 0 and self.running:
-            self.label.config(text="Time is up!")
-            self.root.after(1000, self.start_next_session)
+            self.handle_session_end()
+
+    def handle_session_end(self):
+        if self.current_cycle % 2 == 1:
+            # 作業時間終了時
+            messagebox.showinfo("タイマー終了", "時間になりました。休憩しましょう！")
+            self.label.config(text="Short Break")
+            self.remaining_time = self.short_break
+        else:
+            # 休憩時間終了時
+            if self.current_cycle == self.cycles * 2 - 1:
+                messagebox.showinfo("タイマー終了", "時間になりました。長い休憩を取りましょう！")
+                self.label.config(text="Long Break")
+                self.remaining_time = self.long_break
+            else:
+                messagebox.showinfo("タイマー終了", "休憩が終わりました。次の作業を始めましょう！")
+                self.label.config(text=f"Cycle {self.current_cycle // 2 + 1} - Work Time")
+                self.remaining_time = self.work_time
+
+        self.current_cycle += 1
+
+        # 4回目のサイクル終了後に1回目のサイクルに戻る
+        if self.current_cycle >= self.cycles * 2:
+            self.current_cycle = 0
+
+        self.update_timer()
 
     def start_timer(self):
         self.running = True
@@ -50,24 +74,22 @@ class PomodoroTimer:
         self.remaining_time = self.work_time
         self.update_timer()
 
+    def stop_timer(self):
+        self.running = False
+
     def start_next_session(self):
-        if self.current_cycle < self.cycles:
+        if self.current_cycle < self.cycles * 2:
             if self.current_cycle % 2 == 1:
                 self.label.config(text="Short Break")
                 self.remaining_time = self.short_break
             else:
-                self.label.config(text=f"Cycle {self.current_cycle // 2 + 1} - Work Time")
-                self.remaining_time = self.work_time
+                if self.current_cycle == self.cycles * 2 - 1:
+                    self.label.config(text="Long Break")
+                    self.remaining_time = self.long_break
+                else:
+                    self.label.config(text=f"Cycle {self.current_cycle // 2 + 1} - Work Time")
+                    self.remaining_time = self.work_time
             self.current_cycle += 1
-        else:
-            self.label.config(text="Long Break")
-            self.remaining_time = self.long_break
-        self.update_timer()
-
-    def stop_timer(self):
-        self.running = False
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = PomodoroTimer(root)
-    root.mainloop()
+            if self.current_cycle >= self.cycles * 2:
+                self.current_cycle = 0
+            self.update_timer()
